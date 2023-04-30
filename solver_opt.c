@@ -9,6 +9,7 @@ void allocate_matrices(int N,
 						double **BB,
 						double **BtBt,
 						double **At,
+						double **Bt,
 						double **AB,
 						double **ABAt) {
 	
@@ -27,6 +28,10 @@ void allocate_matrices(int N,
 	*At = calloc(N * N, sizeof(**At));
 	if (*At == NULL)
 		exit(EXIT_FAILURE);
+
+	*Bt = calloc(N * N, sizeof(**Bt));
+	if (*Bt == NULL)
+		exit(EXIT_FAILURE);
 	
 	*AB = calloc(N * N, sizeof(**AB));
 	if (*AB == NULL)
@@ -42,15 +47,55 @@ void allocate_matrices(int N,
  * C = A * B * A' + B' * B'
  */
 double* my_solver(int N, double *A, double* B) {
-	double *C, *BB, *BtBt, *At, *AB, *ABAt;
-	allocate_matrices(N, &C, &BB, &BtBt, &At, &AB, &ABAt);
+	double *C, *BB, *BtBt, *At, *Bt, *AB, *ABAt;
+	allocate_matrices(N, &C, &BB, &BtBt, &At, &Bt, &AB, &ABAt);
+
+	// Compute At and Bt
+	for (register int i = 0; i != N; ++i) {
+		register double *Aptr = A + i * N; // ith row of A
+		register double *Bptr = B + i * N; // ith row of B
+
+		register double *Atptr = At + i; // ith column of At
+		register double *Btptr = Bt + i; // ith column of Bt
+
+		for (register int j = 0; j != N; ++j) {
+			*Atptr = *Aptr++;
+			*Btptr = *Bptr++;
+			Atptr += N;
+			Btptr += N;
+		}
+	}
+
+
+	// Compute B * At (store in C for now)
+	for (register int i = 0; i != N; ++i) {
+		register double *Cptr = C + i * N; // ith row of C
+		register double *Bcpy = B + i * N; // ith row of B
+
+		for (register int j = 0; j != N; ++j) {
+			register double result = 0.0; // line of B * At
+
+			register double *Bptr = Bcpy + j;
+			register double *Aptr = A + j * (N + 1);
+
+			for (register int k = j; k < N; ++k) {
+				result += *Bptr * *Aptr;
+				Bptr++;
+				Aptr++;
+			}
+
+			*Cptr++ = result;
+		}
+	}
+
+	// C for now is B * At
 
 	int i, j, k;
 
 	// Compute BB = B * B
 	for (i = 0; i < N; ++i)
-		for (j = 0; j < N; ++j)
-			for (k = 0; k < N; ++k)
+		for (k = 0; k < N; ++k)
+			for (j = 0; j < N; ++j)
 				BB[i * N + j] += B[i * N + k] * B[k * N + j];
 
 	// Compute BtBt = (BB)t
@@ -58,22 +103,17 @@ double* my_solver(int N, double *A, double* B) {
 		for (j = 0; j < N; ++j)
 			BtBt[i * N + j] = BB[j * N + i];
 
-	// Compute At
-	for (i = 0; i < N; ++i)
-		for (j = 0; j < N; ++j)
-			At[i * N + j] = A[j * N + i];
-
 	// Compute AB = A * B
+	// for (i = 0; i < N; ++i)
+	// 	for (j = 0; j < N; ++j)
+	// 		for (k = i; k < N; ++k)
+	// 			AB[i * N + j] += A[i * N + k] * B[k * N + j];
+
+	// Compute ABAt = A * BAt = A * C
 	for (i = 0; i < N; ++i)
 		for (j = 0; j < N; ++j)
 			for (k = i; k < N; ++k)
-				AB[i * N + j] += A[i * N + k] * B[k * N + j];
-
-	// Compute ABAt = AB * At
-	for (i = 0; i < N; ++i)
-		for (j = 0; j < N; ++j)
-			for (k = j; k < N; ++k)
-				ABAt[i * N + j] += AB[i * N + k] * At[k * N + j];
+				ABAt[i * N + j] += A[i * N + k] * C[k * N + j];
 
 	// Compute C = ABAt + BtBt
 	for (i = 0; i < N; ++i)
@@ -83,6 +123,7 @@ double* my_solver(int N, double *A, double* B) {
 	free(BB);
 	free(BtBt);
 	free(At);
+	free(Bt);
 	free(AB);
 	free(ABAt);
 
