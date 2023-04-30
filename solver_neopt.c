@@ -24,7 +24,7 @@ void allocate_matrices(int N,
 		exit(EXIT_FAILURE);
 
 	*BtBt = calloc(N * N, sizeof(**BtBt));
-	if (*AB == NULL)
+	if (*BtBt == NULL)
 		exit(EXIT_FAILURE);
 }
 
