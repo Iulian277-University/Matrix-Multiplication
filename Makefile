@@ -20,3 +20,4 @@ compare: compare.c utils.h
 clean:
 	rm -rf compare tema2_blas tema2_neopt tema2_opt_m
 	rm -rf out*
+	rm -rf *.memory

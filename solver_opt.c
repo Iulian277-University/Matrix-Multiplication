@@ -8,7 +8,6 @@ void allocate_matrices(int N,
 						double **C,
 						double **BB,
 						double **BtBt,
-						double **BAt,
 						double **At,
 						double **Bt,
 						double **AB,
@@ -24,10 +23,6 @@ void allocate_matrices(int N,
 
 	*BtBt = calloc(N * N, sizeof(**BtBt));
 	if (*BtBt == NULL)
-		exit(EXIT_FAILURE);
-
-	*BAt = calloc(N * N, sizeof(**BAt));
-	if (*BAt == NULL)
 		exit(EXIT_FAILURE);
 
 	*At = calloc(N * N, sizeof(**At));
@@ -52,8 +47,8 @@ void allocate_matrices(int N,
  * C = A * B * A' + B' * B'
  */
 double* my_solver(int N, double *A, double* B) {
-	double *C, *BB, *BtBt, *BAt,*At, *Bt, *AB, *ABAt;
-	allocate_matrices(N, &C, &BB, &BtBt, &BAt, &At, &Bt, &AB, &ABAt);
+	double *C, *BB, *BtBt, *At, *Bt, *AB, *ABAt;
+	allocate_matrices(N, &C, &BB, &BtBt, &At, &Bt, &AB, &ABAt);
 	
 	////// Transpose A and B //////
 
@@ -143,6 +138,8 @@ double* my_solver(int N, double *A, double* B) {
 		}
 	}
 
+	////// C = ABAt + BtBt //////
+
 	// Compute C = ABAt + BtBt
 	for (register int i = 0; i < N; ++i) {
 		register double *Cptr = C + i * N; // ith row of C
@@ -153,6 +150,7 @@ double* my_solver(int N, double *A, double* B) {
 			*Cptr = *ABAtPtr + *BtBtptr;
 	}
 
+	// Free memory
 	free(BB);
 	free(BtBt);
 	free(At);
