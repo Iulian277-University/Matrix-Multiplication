@@ -72,31 +72,45 @@ double* my_solver(int N, double *A, double* B) {
 		register double *Cptr = C + i * N; // ith row of C
 		register double *Bcpy = B + i * N; // ith row of B
 
-		for (register int j = 0; j != N; ++j) {
+		for (register int j = 0; j != N; ++j, ++Cptr) {
 			register double result = 0.0; // line of B * At
 
 			register double *Bptr = Bcpy + j;
 			register double *Aptr = A + j * (N + 1);
 
-			for (register int k = j; k < N; ++k) {
+			for (register int k = j; k < N; ++k, ++Bptr, ++Aptr)
 				result += *Bptr * *Aptr;
-				Bptr++;
-				Aptr++;
-			}
 
-			*Cptr++ = result;
+			*Cptr = result;
 		}
 	}
 
 	// C for now is B * At
 
-	int i, j, k;
+	// Compute BB = B * B; I will use Bt traversed on rows
+	for (register int i = 0; i < N; ++i) {
+		register double *BBptr = BB + i * N; // ith row of BB
+		register double *Bcpy  = B  + i * N; // ith row of B
 
+		for (register int j = 0; j < N; ++j, ++BBptr) {
+			register double result = 0.0; // line of B * B
+
+			register double *Bptr  = Bcpy;
+			register double *Btptr = Bt + j * N; // jth row of Bt
+
+			for (register int k = 0; k < N; ++k, ++Bptr, ++Btptr)
+				result += *Bptr * *Btptr;
+			
+			*BBptr = result;
+		}
+	}
+
+	int i, j, k;
 	// Compute BB = B * B
-	for (i = 0; i < N; ++i)
-		for (k = 0; k < N; ++k)
-			for (j = 0; j < N; ++j)
-				BB[i * N + j] += B[i * N + k] * B[k * N + j];
+	// for (i = 0; i < N; ++i)
+	// 	for (k = 0; k < N; ++k)
+	// 		for (j = 0; j < N; ++j)
+	// 			BB[i * N + j] += B[i * N + k] * B[k * N + j];
 
 	// Compute BtBt = (BB)t
 	for (i = 0; i < N; ++i)
