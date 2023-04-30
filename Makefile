@@ -18,4 +18,5 @@ compare: compare.c utils.h
 	$(CC) $(OPT_CFLAGS) $^ -lm -o $@
 
 clean:
-	rm -rf compare tema2_blas tema2_neopt tema2_opt_m 
+	rm -rf compare tema2_blas tema2_neopt tema2_opt_m
+	rm -rf out*
