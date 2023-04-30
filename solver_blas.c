@@ -86,5 +86,8 @@ double* my_solver(int N, double *A, double *B) {
 		for (int j = 0; j < N; ++j)
 			C[i * N + j] += BtBt[i * N + j];
 
+	// Free memory
+	free(BtBt);
+
 	return C;
 }
