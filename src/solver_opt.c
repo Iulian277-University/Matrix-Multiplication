@@ -129,7 +129,7 @@ double* my_solver(int N, double *A, double* B) {
 			register double result = 0.0; // line of AB * At
 
 			register double *ABptr2 = ABptr + j;
-			register double *Atptr = A + j * (N + 1); // jth row of At
+			register double *Atptr = A + j * N + j; // jth row of At
 
 			for (register int k = j; k < N; ++k, ++ABptr2, ++Atptr)
 				result += *ABptr2 * *Atptr;
