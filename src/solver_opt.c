@@ -75,16 +75,19 @@ double* my_solver(int N, double *A, double* B) {
 		register double *BBptr = BB + i * N; // ith row of BB
 		register double *Bcpy  = B  + i * N; // ith row of B
 
-		for (register int j = 0; j < N; ++j, ++BBptr) {
+		for (register int j = 0; j < N; ++j) {
 			register double result = 0.0; // line of B * B
 
 			register double *Bptr  = Bcpy;
 			register double *Btptr = Bt + j * N; // jth row of Bt
 
-			for (register int k = 0; k < N; ++k, ++Bptr, ++Btptr)
+			for (register int k = 0; k < N; ++k) {
 				result += *Bptr * *Btptr;
+				Bptr++;
+				Btptr++;
+			}
 			
-			*BBptr = result;
+			*BBptr++ = result;
 		}
 	}
 
@@ -106,16 +109,19 @@ double* my_solver(int N, double *A, double* B) {
 		register double *ABptr = AB + i * N; // ith row of AB
 		register double *Acpy  = A  + i * N; // ith row of A
 
-		for (register int j = 0; j < N; ++j, ++ABptr) {
+		for (register int j = 0; j < N; ++j) {
 			register double result = 0.0; // line of A * B
 
 			register double *Aptr = Acpy + i;
 			register double *Btptr = Bt + j * N + i; // jth row of Bt
 
-			for (register int k = i; k < N; ++k, ++Aptr, ++Btptr)
+			for (register int k = i; k < N; ++k) {
 				result += *Aptr * *Btptr;
+				Aptr++;
+				Btptr++;
+			}
 
-			*ABptr = result;
+			*ABptr++ = result;
 		}
 	}
 
@@ -129,10 +135,13 @@ double* my_solver(int N, double *A, double* B) {
 			register double result = 0.0; // line of AB * At
 
 			register double *ABptr2 = ABptr + j;
-			register double *Atptr = A + j * N + j; // jth row of At
+			register double *Atptr = A + j * N + j; // jth row of At, jth column of A
 
-			for (register int k = j; k < N; ++k, ++ABptr2, ++Atptr)
+			for (register int k = j; k < N; ++k) {
 				result += *ABptr2 * *Atptr;
+				ABptr2++;
+				Atptr++;
+			}
 			
 			*ABAtPtr = result;
 		}
@@ -146,8 +155,8 @@ double* my_solver(int N, double *A, double* B) {
 		register double *ABAtPtr = ABAt + i * N; // ith row of ABAt
 		register double *BtBtptr = BtBt + i * N; // ith row of BtBt
 
-		for (register int j = 0; j < N; ++j, ++Cptr, ++ABAtPtr, ++BtBtptr)
-			*Cptr = *ABAtPtr + *BtBtptr;
+		for (register int j = 0; j < N; ++j)
+			*Cptr++ = *ABAtPtr++ + *BtBtptr++;
 	}
 
 	// Free memory
